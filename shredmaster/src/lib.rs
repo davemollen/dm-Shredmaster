@@ -56,6 +56,7 @@ impl Shredmaster {
     volume: f32,
     brilliance: bool,
   ) -> f32 {
+    // TODO: make bass logarithmic
     let [gain, bass, contour, treble, volume] =
       self
         .smooth_parameters
