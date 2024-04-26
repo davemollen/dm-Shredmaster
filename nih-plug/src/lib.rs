@@ -73,13 +73,11 @@ impl Plugin for DmShredmaster {
     let brilliance = self.params.brilliance.value();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
-      let input = channel_samples.get_mut(0).unwrap();
+      let sample = channel_samples.iter_mut().next().unwrap();
       let shredmaster_output = self
         .shredmaster
-        .process(*input, gain, bass, contour, treble, volume, brilliance);
-
-      let output = channel_samples.get_mut(0).unwrap();
-      *output = shredmaster_output;
+        .process(*sample, gain, bass, contour, treble, volume, brilliance);
+      *sample = shredmaster_output;
     });
     ProcessStatus::Normal
   }
