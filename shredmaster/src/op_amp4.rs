@@ -1,14 +1,14 @@
-use crate::shared::op_amp::OpAmp;
+use crate::shared::inverting_op_amp::InvertingOpAmp;
 
 // Maybe this one can be replaced with a one-pole filter, because the highpass frequency is at 7.23Hz
 pub struct OpAmp4 {
-  op_amp: OpAmp,
+  op_amp: InvertingOpAmp,
 }
 
 impl OpAmp4 {
   pub fn new(sample_rate: f32) -> Self {
     Self {
-      op_amp: OpAmp::new(sample_rate),
+      op_amp: InvertingOpAmp::new(sample_rate),
     }
   }
 

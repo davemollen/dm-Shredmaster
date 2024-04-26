@@ -17,7 +17,7 @@ mod smooth_parameters;
 use smooth_parameters::SmoothParameters;
 pub mod shared {
   pub mod bilinear_transform;
-  pub mod op_amp;
+  pub mod inverting_op_amp;
   pub mod third_order_iir_filter;
 }
 

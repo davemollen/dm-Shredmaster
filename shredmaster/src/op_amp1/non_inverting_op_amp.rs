@@ -3,12 +3,12 @@ use biquad_filter::BiquadFilter;
 mod bilinear_transform;
 use bilinear_transform::BilinearTransform;
 
-pub struct OpAmp {
+pub struct NonInvertingOpAmp {
   op_amp: BiquadFilter,
   bilinear_transform: BilinearTransform,
 }
 
-impl OpAmp {
+impl NonInvertingOpAmp {
   pub fn new(sample_rate: f32) -> Self {
     Self {
       op_amp: BiquadFilter::new(),
@@ -16,8 +16,7 @@ impl OpAmp {
     }
   }
 
-  /// First tuple element represents b1, because b0 & b2 are expected to equal zero.
-  pub fn process(&mut self, input: f32, s_domain_coefficients: (f32, [f32; 3])) -> f32 {
+  pub fn process(&mut self, input: f32, s_domain_coefficients: ([f32; 3], [f32; 3])) -> f32 {
     let z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
     self.op_amp.process(input, z_domain_coefficients)
   }

@@ -1,13 +1,13 @@
-use crate::shared::op_amp::OpAmp;
+use crate::shared::inverting_op_amp::InvertingOpAmp;
 
 pub struct OpAmp2 {
-  op_amp: OpAmp,
+  op_amp: InvertingOpAmp,
 }
 
 impl OpAmp2 {
   pub fn new(sample_rate: f32) -> Self {
     Self {
-      op_amp: OpAmp::new(sample_rate),
+      op_amp: InvertingOpAmp::new(sample_rate),
     }
   }
 
