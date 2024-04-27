@@ -1,13 +1,24 @@
 from scipy import signal
 import numpy as np
 import matplotlib.pyplot as plt
+from enum import Enum
 
 # Set the sample rate
 sample_rate = 44100  # in Hz
 
 # Set bass and treble to a different value between 0. and 1. to see the difference in the frequency response
-treble = 0.5
 bass = 0.5
+treble = 0.5
+
+class PotType(float, Enum):
+  LINEAR = 1.
+  LOG_A = 1.75
+  LOG_B = 3.33333
+
+pot_type = PotType.LOG_B
+
+def log_pot(x, max):
+  return pow(x, pot_type.value) * max
 
 def get_s_domain_coefficients(bass, treble):
   # The following transfer function was derived with QsapecNG:
@@ -18,7 +29,7 @@ def get_s_domain_coefficients(bass, treble):
   # This function implements this transfer function, but with less repeated calculations.
 
   r1 = 22000.
-  r2 = 100000. * bass
+  r2 = log_pot(bass, 100000)
   r3 = 1000.
   r4 = 6800.
 
@@ -65,5 +76,5 @@ plt.xlabel('frequency [Hz]')
 plt.grid()
 plt.axis('tight')
 plt.xlim([10, 20000])
-plt.ylim([-18, 0])
+plt.ylim([-30, 0])
 plt.show()
