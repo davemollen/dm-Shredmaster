@@ -13,7 +13,8 @@ treble = 0.5
 class PotType(float, Enum):
   LINEAR = 1.
   LOG_A = 1.75
-  LOG_B = 3.33333
+  LOG_B = 2
+  LOG_C = 3.33333
 
 pot_type = PotType.LOG_B
 

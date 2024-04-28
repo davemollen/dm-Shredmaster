@@ -17,11 +17,9 @@ mod smooth_parameters;
 use smooth_parameters::SmoothParameters;
 pub mod shared {
   pub mod bilinear_transform;
-  pub mod float_ext;
   pub mod inverting_op_amp;
   pub mod third_order_iir_filter;
 }
-use crate::shared::float_ext::FloatExt;
 
 pub struct Shredmaster {
   op_amp1: OpAmp1,
@@ -62,7 +60,7 @@ impl Shredmaster {
     let [gain, bass, contour, treble, volume] =
       self
         .smooth_parameters
-        .process([gain, bass.fast_pow(1.75), contour, treble, volume]);
+        .process([gain, bass * bass, contour, treble, volume]);
 
     let op_amp1_output = self.op_amp1.process(input, gain);
     let op_amp2_output = self.op_amp2.process(op_amp1_output);
