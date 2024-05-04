@@ -56,11 +56,10 @@ impl Shredmaster {
     volume: f32,
     brilliance: bool,
   ) -> f32 {
-    // TODO: make bass logarithmic
     let [gain, bass, contour, treble, volume] =
       self
         .smooth_parameters
-        .process([gain, bass * bass, contour, treble, volume]);
+        .process([gain, bass * bass, contour, treble, volume * volume]);
 
     let op_amp1_output = self.op_amp1.process(input, gain);
     let op_amp2_output = self.op_amp2.process(op_amp1_output);
