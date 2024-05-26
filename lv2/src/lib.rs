@@ -18,6 +18,7 @@ struct Ports {
 #[uri("https://github.com/davemollen/dm-Shredmaster")]
 struct DmShredmaster {
   shredmaster: Shredmaster,
+  is_active: bool,
 }
 
 impl Plugin for DmShredmaster {
@@ -32,6 +33,7 @@ impl Plugin for DmShredmaster {
   fn new(_plugin_info: &PluginInfo, _features: &mut ()) -> Option<Self> {
     Some(Self {
       shredmaster: Shredmaster::new(_plugin_info.sample_rate() as f32),
+      is_active: false,
     })
   }
 
@@ -39,11 +41,18 @@ impl Plugin for DmShredmaster {
   // iterates over.
   fn run(&mut self, ports: &mut Ports, _features: &mut (), _sample_count: u32) {
     let gain = *ports.gain;
-    let bass = *ports.bass;
+    let bass = *ports.bass * *ports.bass;
     let contour = *ports.contour;
     let treble = *ports.treble;
-    let volume = *ports.volume;
+    let volume = *ports.volume * *ports.volume;
     let brilliance = *ports.brilliance == 1.;
+
+    if !self.is_active {
+      self
+        .shredmaster
+        .initialize_params(gain, bass, contour, treble, volume);
+      self.is_active = true;
+    }
 
     for (input, output) in ports.input.iter().zip(ports.output.iter_mut()) {
       *output = self

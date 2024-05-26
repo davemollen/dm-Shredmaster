@@ -15,8 +15,9 @@ mod contour;
 use contour::Contour;
 mod smooth_parameters;
 use smooth_parameters::SmoothParameters;
-pub mod shared {
+mod shared {
   pub mod bilinear_transform;
+  pub mod float_ext;
   pub mod inverting_op_amp;
   pub mod third_order_iir_filter;
 }
@@ -29,7 +30,7 @@ pub struct Shredmaster {
   op_amp3: OpAmp3,
   contour: Contour,
   op_amp4: OpAmp4,
-  smooth_parameters: SmoothParameters<5>,
+  smooth_parameters: SmoothParameters,
 }
 
 impl Shredmaster {
@@ -46,6 +47,19 @@ impl Shredmaster {
     }
   }
 
+  pub fn initialize_params(
+    &mut self,
+    gain: f32,
+    bass: f32,
+    contour: f32,
+    treble: f32,
+    volume: f32,
+  ) {
+    self
+      .smooth_parameters
+      .initialize(gain, bass, contour, treble, volume);
+  }
+
   pub fn process(
     &mut self,
     input: f32,
@@ -56,10 +70,9 @@ impl Shredmaster {
     volume: f32,
     brilliance: bool,
   ) -> f32 {
-    let [gain, bass, contour, treble, volume] =
-      self
-        .smooth_parameters
-        .process([gain, bass * bass, contour, treble, volume * volume]);
+    let (gain, bass, contour, treble, volume) = self
+      .smooth_parameters
+      .process(gain, bass, contour, treble, volume);
 
     let op_amp1_output = self.op_amp1.process(input, gain);
     let op_amp2_output = self.op_amp2.process(op_amp1_output);

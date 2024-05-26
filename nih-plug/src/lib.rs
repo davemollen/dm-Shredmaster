@@ -10,6 +10,26 @@ struct DmShredmaster {
   shredmaster: Shredmaster,
 }
 
+impl DmShredmaster {
+  fn get_params(&self) -> (f32, f32, f32, f32, f32, bool) {
+    let gain = self.params.gain.value();
+    let bass = self.params.bass.value();
+    let contour = self.params.contour.value();
+    let treble = self.params.treble.value();
+    let volume = self.params.volume.value();
+    let brilliance = self.params.brilliance.value();
+
+    (
+      gain,
+      bass * bass,
+      contour,
+      treble,
+      volume * volume,
+      brilliance,
+    )
+  }
+}
+
 impl Default for DmShredmaster {
   fn default() -> Self {
     let params = Arc::new(ShredmasterParameters::default());
@@ -56,6 +76,10 @@ impl Plugin for DmShredmaster {
     _context: &mut impl InitContext<Self>,
   ) -> bool {
     self.shredmaster = Shredmaster::new(buffer_config.sample_rate);
+    let (gain, bass, contour, treble, volume, _) = self.get_params();
+    self
+      .shredmaster
+      .initialize_params(gain, bass, contour, treble, volume);
     true
   }
 
@@ -65,12 +89,7 @@ impl Plugin for DmShredmaster {
     _aux: &mut AuxiliaryBuffers,
     _context: &mut impl ProcessContext<Self>,
   ) -> ProcessStatus {
-    let gain = self.params.gain.value();
-    let bass = self.params.bass.value();
-    let contour = self.params.contour.value();
-    let treble = self.params.treble.value();
-    let volume = self.params.volume.value();
-    let brilliance = self.params.brilliance.value();
+    let (gain, bass, contour, treble, volume, brilliance) = self.get_params();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
       let sample = channel_samples.iter_mut().next().unwrap();
