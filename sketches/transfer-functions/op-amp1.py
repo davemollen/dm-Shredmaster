@@ -18,7 +18,7 @@ class GainPotValue(float, Enum):
   HUNDRED_THOUSAND = 100000.
 
 # Change the gain_pot_value to see the difference in the frequency response
-gain_pot_value = GainPotValue.HUNDRED_THOUSAND
+gain_pot_value = GainPotValue.THOUSAND
 
 # Use predefined s-domain coefficients
 match gain_pot_value:
@@ -70,11 +70,9 @@ def generate_s_domain_coefficients(gain_pot_value):
 
   a0 = r1c1 * r2c2
   a1 = r1c1 + r2c2
-  b2a2 = 1. / a0
-  b1 = (r2 * c1 + a1) / a0
-  a1 /= a0
+  b1 = r2 * c1 + a1
 
-  return ([1., b1, b2a2], [1., a1, b2a2])
+  return ([0., b1, 1.], [a0, a1, 1.])
     
 # Use s-domain coefficients derived from just the distortion_pot_value
 num, den = generate_s_domain_coefficients(gain_pot_value.value)
