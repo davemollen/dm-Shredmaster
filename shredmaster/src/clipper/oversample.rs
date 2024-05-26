@@ -1,53 +1,43 @@
-mod coefficients;
-pub use coefficients::Coefficients;
 mod fir_filter;
-use fir_filter::{FirFilter, SimdFir};
-mod simd_type;
-use simd_type::SimdType;
+use {
+  fir_filter::FirFilter,
+  std::simd::{f32x8, num::SimdFloat},
+};
 
-pub struct Oversample<T> {
-  upsample_fir: FirFilter<T>,
-  downsample_fir: FirFilter<T>,
-  oversample_factor: usize,
+const OVERSAMPLE_FACTOR: f32 = 8.;
+
+pub struct Oversample {
+  fir: FirFilter,
 }
 
-impl<T: SimdType> Oversample<T>
-where
-  Vec<T>: Coefficients,
-{
+impl Oversample {
   pub fn new() -> Self {
-    let oversample_factor = T::oversample_factor();
-
     Self {
-      upsample_fir: FirFilter::new(16),
-      downsample_fir: FirFilter::new(16),
-      oversample_factor,
+      fir: FirFilter::new(),
     }
   }
 
   pub fn process<F>(&mut self, input: f32, callback: F) -> f32
   where
-    F: Fn(T) -> T,
+    F: Fn(f32x8) -> f32x8,
   {
     let upsampled = self.upsample(input);
     let processed = self.run_upsampled_process(upsampled, callback);
     self.downsample(processed)
   }
 
-  fn upsample(&mut self, input: f32) -> T {
-    self
-      .upsample_fir
-      .process(SimdType::splat(input * self.oversample_factor as f32))
+  fn upsample(&mut self, input: f32) -> f32x8 {
+    self.fir.process(f32x8::splat(input * OVERSAMPLE_FACTOR))
   }
 
-  fn run_upsampled_process<F>(&mut self, input: T, callback: F) -> T
+  fn run_upsampled_process<F>(&mut self, input: f32x8, callback: F) -> f32x8
   where
-    F: Fn(T) -> T,
+    F: Fn(f32x8) -> f32x8,
   {
     callback(input)
   }
 
-  fn downsample(&mut self, input: T) -> f32 {
-    self.downsample_fir.process(input).reduce_sum()
+  fn downsample(&mut self, input: f32x8) -> f32 {
+    self.fir.process(input).reduce_sum()
   }
 }
