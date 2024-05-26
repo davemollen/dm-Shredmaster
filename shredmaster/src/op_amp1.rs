@@ -6,6 +6,11 @@ pub struct OpAmp1 {
 }
 
 impl OpAmp1 {
+  const R1: f32 = 3300.;
+  const R2: f32 = 100000.;
+  const C1: f32 = 4.7e-8;
+  const C2: f32 = 1e-10;
+
   pub fn new(sample_rate: f32) -> Self {
     Self {
       op_amp: NonInvertingOpAmp::new(sample_rate),
@@ -18,17 +23,14 @@ impl OpAmp1 {
   }
 
   fn get_s_domain_coefficients(&self, gain: f32) -> ([f32; 3], [f32; 3]) {
-    let r1 = 3300.;
-    let c1 = 4.7e-8;
-    let r2 = (gain * 100000.).max(1.);
-    let c2 = 1e-10;
+    let r2 = (gain * Self::R2).max(1.);
 
-    let r1c1 = r1 * c1;
-    let r2c2 = r2 * c2;
+    let r1c1 = Self::R1 * Self::C1;
+    let r2c2 = r2 * Self::C2;
 
     let a0 = r1c1 * r2c2;
     let a1 = r1c1 + r2c2;
-    let b1 = r2 * c1 + a1;
+    let b1 = r2 * Self::C1 + a1;
 
     ([0., b1, 1.], [a0, a1, 1.])
   }
