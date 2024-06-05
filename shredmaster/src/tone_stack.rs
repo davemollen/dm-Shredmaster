@@ -2,19 +2,24 @@ use crate::shared::{
   bilinear_transform::BilinearTransform, third_order_iir_filter::ThirdOrderIIRFilter,
 };
 
+const R1: f32 = 22000.;
+const R2: f32 = 100000.;
+const R3: f32 = 1000.;
+const R4: f32 = 6800.;
+const C1: f32 = 2.2e-8;
+const C2: f32 = 2.2e-7;
+const C3: f32 = 2.2e-8;
+
 pub struct ToneStack {
   filter: ThirdOrderIIRFilter,
   bilinear_transform: BilinearTransform,
 }
 
 impl ToneStack {
-  const R1: f32 = 22000.;
-  const R2: f32 = 100000.;
-  const R3: f32 = 1000.;
-  const R4: f32 = 6800.;
-  const C1: f32 = 2.2e-8;
-  const C2: f32 = 2.2e-7;
-  const C3: f32 = 2.2e-8;
+  const C1C2: f32 = C1 * C2;
+  const C1C3: f32 = C1 * C3;
+  const C2C3: f32 = C2 * C3;
+  const C1C2C3: f32 = Self::C1C2 * C3;
 
   pub fn new(sample_rate: f32) -> Self {
     Self {
@@ -30,51 +35,34 @@ impl ToneStack {
   }
 
   fn get_s_domain_coefficients(&self, bass: f32, treble: f32) -> ([f32; 4], [f32; 4]) {
-    let r2 = Self::R2 * bass;
+    let r2 = R2 * bass;
 
-    let c1c2 = Self::C1 * Self::C2;
-    let c1c3 = Self::C1 * Self::C3;
-    let c2c3 = Self::C2 * Self::C3;
-    let c1c2c3 = c1c2 * Self::C3;
+    let r1_a = treble * R1;
+    let r1_b = (1. - treble) * R1;
 
-    let r1_a = treble * Self::R1;
-    let r1_b = (1. - treble) * Self::R1;
-
-    let b0 = c1c2c3 * r2 * Self::R3 * Self::R4
-      + r1_a * c1c2c3 * r2 * Self::R4
-      + r1_a * c1c2c3 * r2 * Self::R3
-      + c1c2c3 * r2 * Self::R3 * r1_b;
-    let b1 = c1c3 * r2 * Self::R4
-      + c1c2 * r2 * Self::R4
-      + c2c3 * r2 * Self::R3
-      + c1c3 * r2 * Self::R3
-      + c1c3 * Self::R3 * Self::R4
-      + c1c2 * Self::R3 * Self::R4
-      + r1_a * c1c3 * Self::R4
-      + r1_a * c1c2 * r2
-      + r1_a * c1c2 * Self::R4
-      + r1_a * c1c3 * Self::R3
-      + r1_a * c1c2 * Self::R3
-      + c1c2 * r2 * r1_b
-      + c1c3 * Self::R3 * r1_b
-      + c1c2 * Self::R3 * r1_b;
-    let b2 = Self::C2 * r2
-      + Self::C1 * r2
-      + Self::C3 * Self::R3
-      + Self::C2 * Self::R3
-      + Self::C1 * Self::R3
-      + r1_a * Self::C1;
-    let a0 = b0 + c1c2c3 * r2 * Self::R4 * r1_b;
-    let a1 = b1 + c2c3 * r2 * Self::R4 + c1c3 * Self::R4 * r1_b + c1c2 * Self::R4 * r1_b;
-    let a2 = Self::C3 * Self::R4
-      + Self::C2 * r2
-      + Self::C1 * r2
-      + Self::C2 * Self::R4
-      + Self::C3 * Self::R3
-      + Self::C2 * Self::R3
-      + Self::C1 * Self::R3
-      + r1_a * Self::C1
-      + Self::C1 * r1_b;
+    let b0 = Self::C1C2C3 * r2 * R3 * R4
+      + r1_a * Self::C1C2C3 * r2 * R4
+      + r1_a * Self::C1C2C3 * r2 * R3
+      + Self::C1C2C3 * r2 * R3 * r1_b;
+    let b1 = Self::C1C3 * r2 * R4
+      + Self::C1C2 * r2 * R4
+      + Self::C2C3 * r2 * R3
+      + Self::C1C3 * r2 * R3
+      + Self::C1C3 * R3 * R4
+      + Self::C1C2 * R3 * R4
+      + r1_a * Self::C1C3 * R4
+      + r1_a * Self::C1C2 * r2
+      + r1_a * Self::C1C2 * R4
+      + r1_a * Self::C1C3 * R3
+      + r1_a * Self::C1C2 * R3
+      + Self::C1C2 * r2 * r1_b
+      + Self::C1C3 * R3 * r1_b
+      + Self::C1C2 * R3 * r1_b;
+    let b2 = C2 * r2 + C1 * r2 + C3 * R3 + C2 * R3 + C1 * R3 + r1_a * C1;
+    let a0 = b0 + Self::C1C2C3 * r2 * R4 * r1_b;
+    let a1 = b1 + Self::C2C3 * r2 * R4 + Self::C1C3 * R4 * r1_b + Self::C1C2 * R4 * r1_b;
+    let a2 =
+      C3 * R4 + C2 * r2 + C1 * r2 + C2 * R4 + C3 * R3 + C2 * R3 + C1 * R3 + r1_a * C1 + C1 * r1_b;
 
     ([b0, b1, b2, 0.], [a0, a1, a2, 1.])
   }

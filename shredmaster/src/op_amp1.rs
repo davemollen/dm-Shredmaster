@@ -1,15 +1,17 @@
 mod non_inverting_op_amp;
 use non_inverting_op_amp::NonInvertingOpAmp;
 
+const R1: f32 = 3300.;
+const R2: f32 = 100000.;
+const C1: f32 = 4.7e-8;
+const C2: f32 = 1e-10;
+
 pub struct OpAmp1 {
   op_amp: NonInvertingOpAmp,
 }
 
 impl OpAmp1 {
-  const R1: f32 = 3300.;
-  const R2: f32 = 100000.;
-  const C1: f32 = 4.7e-8;
-  const C2: f32 = 1e-10;
+  const R1C1: f32 = R1 * C1;
 
   pub fn new(sample_rate: f32) -> Self {
     Self {
@@ -23,14 +25,13 @@ impl OpAmp1 {
   }
 
   fn get_s_domain_coefficients(&self, gain: f32) -> ([f32; 3], [f32; 3]) {
-    let r2 = (gain * Self::R2).max(1.);
+    let r2 = (gain * R2).max(1.);
 
-    let r1c1 = Self::R1 * Self::C1;
-    let r2c2 = r2 * Self::C2;
+    let r2c2: f32 = r2 * C2;
 
-    let a0 = r1c1 * r2c2;
-    let a1 = r1c1 + r2c2;
-    let b1 = r2 * Self::C1 + a1;
+    let a0 = Self::R1C1 * r2c2;
+    let a1 = Self::R1C1 + r2c2;
+    let b1 = r2 * C1 + a1;
 
     ([0., b1, 1.], [a0, a1, 1.])
   }
