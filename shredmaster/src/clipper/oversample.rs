@@ -7,13 +7,15 @@ use {
 const OVERSAMPLE_FACTOR: f32 = 8.;
 
 pub struct Oversample {
-  fir: FirFilter,
+  upsample_fir: FirFilter,
+  downsample_fir: FirFilter,
 }
 
 impl Oversample {
   pub fn new() -> Self {
     Self {
-      fir: FirFilter::new(),
+      upsample_fir: FirFilter::new(),
+      downsample_fir: FirFilter::new(),
     }
   }
 
@@ -27,7 +29,9 @@ impl Oversample {
   }
 
   fn upsample(&mut self, input: f32) -> f32x8 {
-    self.fir.process(f32x8::splat(input * OVERSAMPLE_FACTOR))
+    self
+      .upsample_fir
+      .process(f32x8::splat(input * OVERSAMPLE_FACTOR))
   }
 
   fn run_upsampled_process<F>(&mut self, input: f32x8, callback: F) -> f32x8
@@ -38,6 +42,6 @@ impl Oversample {
   }
 
   fn downsample(&mut self, input: f32x8) -> f32 {
-    self.fir.process(input).reduce_sum()
+    self.downsample_fir.process(input).reduce_sum()
   }
 }
