@@ -6,4 +6,3 @@
     lv2:binary <libdm_shredmaster.so> ;
     rdfs:seeAlso <dm-Shredmaster_dsp.ttl>  .
 <https://github.com/davemollen/dm-Shredmaster> rdfs:seeAlso <modgui.ttl> .
-<https://github.com/davemollen/dm-Shredmaster> rdfs:seeAlso <modgui.ttl> .
