@@ -33,7 +33,7 @@ impl OpAmp1 {
     let a1 = Self::R1C1 + r2c2;
     let b1 = r2 * C1 + a1;
 
-    ([0., b1, 1.], [a0, a1, 1.])
+    ([a0, b1, 1.], [a0, a1, 1.])
   }
 }
 

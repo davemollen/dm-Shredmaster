@@ -72,7 +72,7 @@ def generate_s_domain_coefficients(gain_pot_value):
   a1 = r1c1 + r2c2
   b1 = r2 * c1 + a1
 
-  return ([0., b1, 1.], [a0, a1, 1.])
+  return ([a0, b1, 1.], [a0, a1, 1.])
     
 # Use s-domain coefficients derived from just the distortion_pot_value
 num, den = generate_s_domain_coefficients(gain_pot_value.value)
