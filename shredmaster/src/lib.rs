@@ -1,4 +1,3 @@
-#![feature(portable_simd)]
 mod op_amp1;
 use op_amp1::OpAmp1;
 mod op_amp2;
