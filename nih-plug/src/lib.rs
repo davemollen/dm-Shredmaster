@@ -21,10 +21,10 @@ impl DmShredmaster {
 
     (
       gain,
-      bass * bass,
+      bass * bass * bass,
       contour,
       treble,
-      volume * volume,
+      volume * volume * volume,
       brilliance,
     )
   }

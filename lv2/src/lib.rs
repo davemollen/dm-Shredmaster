@@ -41,10 +41,10 @@ impl Plugin for DmShredmaster {
   // iterates over.
   fn run(&mut self, ports: &mut Ports, _features: &mut (), _sample_count: u32) {
     let gain = *ports.gain;
-    let bass = *ports.bass * *ports.bass;
+    let bass = *ports.bass * *ports.bass * *ports.bass;
     let contour = *ports.contour;
     let treble = *ports.treble;
-    let volume = *ports.volume * *ports.volume;
+    let volume = *ports.volume * *ports.volume * *ports.volume;
     let brilliance = *ports.brilliance == 1.;
 
     if !self.is_active {
