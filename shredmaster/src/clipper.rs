@@ -4,8 +4,6 @@ use {
   std::simd::{f32x8, num::SimdFloat, StdFloat},
 };
 
-const OVERSAMPLE_FACTOR: f32 = 8.;
-
 pub struct Clipper {
   upsample_fir: FirFilter,
   downsample_fir: FirFilter,
@@ -20,11 +18,9 @@ impl Clipper {
   }
 
   pub fn process(&mut self, input: f32) -> f32 {
-    let upsampled = self
-      .upsample_fir
-      .process(f32x8::splat(input * 2.5 * OVERSAMPLE_FACTOR));
+    let upsampled = self.upsample_fir.upsample(input * 2.5);
     let clipped = Self::clip(upsampled);
-    self.downsample_fir.process(clipped).reduce_sum() * 0.26815 // 0.5363 * 0.5
+    self.downsample_fir.downsample(clipped) * 0.26815 // 0.5363 * 0.5
   }
 
   fn clip(x: f32x8) -> f32x8 {
