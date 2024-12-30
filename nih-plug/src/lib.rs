@@ -1,5 +1,5 @@
 use nih_plug::prelude::*;
-use shredmaster::Shredmaster;
+use shredmaster::{Params as ProcessParams, Shredmaster};
 use std::sync::Arc;
 mod shredmaster_parameters;
 use shredmaster_parameters::ShredmasterParameters;
@@ -8,26 +8,7 @@ mod editor;
 struct DmShredmaster {
   params: Arc<ShredmasterParameters>,
   shredmaster: Shredmaster,
-}
-
-impl DmShredmaster {
-  fn get_params(&self) -> (f32, f32, f32, f32, f32, bool) {
-    let gain = self.params.gain.value();
-    let bass = self.params.bass.value();
-    let contour = self.params.contour.value();
-    let treble = self.params.treble.value();
-    let volume = self.params.volume.value();
-    let brilliance = self.params.brilliance.value();
-
-    (
-      gain,
-      bass * bass * bass,
-      contour,
-      treble,
-      volume * volume * volume,
-      brilliance,
-    )
-  }
+  process_params: ProcessParams,
 }
 
 impl Default for DmShredmaster {
@@ -36,6 +17,7 @@ impl Default for DmShredmaster {
     Self {
       params: params.clone(),
       shredmaster: Shredmaster::new(44100.),
+      process_params: ProcessParams::new(44100.),
     }
   }
 }
@@ -76,10 +58,7 @@ impl Plugin for DmShredmaster {
     _context: &mut impl InitContext<Self>,
   ) -> bool {
     self.shredmaster = Shredmaster::new(buffer_config.sample_rate);
-    let (gain, bass, contour, treble, volume, _) = self.get_params();
-    self
-      .shredmaster
-      .initialize_params(gain, bass, contour, treble, volume);
+    self.process_params = ProcessParams::new(buffer_config.sample_rate);
     true
   }
 
@@ -89,13 +68,20 @@ impl Plugin for DmShredmaster {
     _aux: &mut AuxiliaryBuffers,
     _context: &mut impl ProcessContext<Self>,
   ) -> ProcessStatus {
-    let (gain, bass, contour, treble, volume, brilliance) = self.get_params();
+    self.process_params.set(
+      self.params.gain.value(),
+      self.params.bass.value(),
+      self.params.contour.value(),
+      self.params.treble.value(),
+      self.params.volume.value(),
+      self.params.brilliance.value(),
+    );
 
     buffer.iter_samples().for_each(|mut channel_samples| {
       let sample = channel_samples.iter_mut().next().unwrap();
       let shredmaster_output = self
         .shredmaster
-        .process(*sample, gain, bass, contour, treble, volume, brilliance);
+        .process(*sample, &mut self.process_params);
       *sample = shredmaster_output;
     });
     ProcessStatus::Normal

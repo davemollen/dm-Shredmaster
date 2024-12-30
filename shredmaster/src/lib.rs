@@ -1,26 +1,23 @@
 #![feature(portable_simd)]
-mod op_amp1;
-use op_amp1::OpAmp1;
-mod op_amp2;
-use op_amp2::OpAmp2;
-mod op_amp3;
-use op_amp3::OpAmp3;
-mod op_amp4;
-use op_amp4::OpAmp4;
-mod tone_stack;
-use tone_stack::ToneStack;
 mod clipper;
-use clipper::Clipper;
 mod contour;
-use contour::Contour;
-mod smooth_parameters;
-use smooth_parameters::SmoothParameters;
+mod op_amp1;
+mod op_amp2;
+mod op_amp3;
+mod op_amp4;
+mod params;
+mod tone_stack;
 mod shared {
   pub mod bilinear_transform;
   pub mod float_ext;
   pub mod inverting_op_amp;
   pub mod third_order_iir_filter;
 }
+pub use params::Params;
+use {
+  clipper::Clipper, contour::Contour, op_amp1::OpAmp1, op_amp2::OpAmp2, op_amp3::OpAmp3,
+  op_amp4::OpAmp4, params::Smoother, tone_stack::ToneStack,
+};
 
 pub struct Shredmaster {
   op_amp1: OpAmp1,
@@ -30,7 +27,6 @@ pub struct Shredmaster {
   op_amp3: OpAmp3,
   contour: Contour,
   op_amp4: OpAmp4,
-  smooth_parameters: SmoothParameters,
 }
 
 impl Shredmaster {
@@ -43,36 +39,16 @@ impl Shredmaster {
       op_amp3: OpAmp3::new(sample_rate),
       contour: Contour::new(sample_rate),
       op_amp4: OpAmp4::new(sample_rate),
-      smooth_parameters: SmoothParameters::new(sample_rate),
     }
   }
 
-  pub fn initialize_params(
-    &mut self,
-    gain: f32,
-    bass: f32,
-    contour: f32,
-    treble: f32,
-    volume: f32,
-  ) {
-    self
-      .smooth_parameters
-      .initialize(gain, bass, contour, treble, volume);
-  }
-
-  pub fn process(
-    &mut self,
-    input: f32,
-    gain: f32,
-    bass: f32,
-    contour: f32,
-    treble: f32,
-    volume: f32,
-    brilliance: bool,
-  ) -> f32 {
-    let (gain, bass, contour, treble, volume) = self
-      .smooth_parameters
-      .process(gain, bass, contour, treble, volume);
+  pub fn process(&mut self, input: f32, params: &mut Params) -> f32 {
+    let gain = params.gain.next();
+    let bass = params.bass.next();
+    let contour = params.contour.next();
+    let treble = params.treble.next();
+    let volume = params.volume.next();
+    let brilliance = params.brilliance;
 
     let op_amp1_output = self.op_amp1.process(input, gain);
     let op_amp2_output = self.op_amp2.process(op_amp1_output);
