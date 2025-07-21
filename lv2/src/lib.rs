@@ -5,14 +5,14 @@ use shredmaster::{Params, Shredmaster};
 
 #[derive(PortCollection)]
 struct Ports {
-  gain: InputPort<Control>,
-  bass: InputPort<Control>,
-  contour: InputPort<Control>,
-  treble: InputPort<Control>,
-  volume: InputPort<Control>,
-  brilliance: InputPort<Control>,
-  input: InputPort<Audio>,
-  output: OutputPort<Audio>,
+  gain: InputPort<InPlaceControl>,
+  bass: InputPort<InPlaceControl>,
+  contour: InputPort<InPlaceControl>,
+  treble: InputPort<InPlaceControl>,
+  volume: InputPort<InPlaceControl>,
+  brilliance: InputPort<InPlaceControl>,
+  input: InputPort<InPlaceAudio>,
+  output: OutputPort<InPlaceAudio>,
 }
 
 #[uri("https://github.com/davemollen/dm-Shredmaster")]
@@ -43,16 +43,17 @@ impl Plugin for DmShredmaster {
   // iterates over.
   fn run(&mut self, ports: &mut Ports, _features: &mut (), _sample_count: u32) {
     self.params.set(
-      *ports.gain,
-      *ports.bass,
-      *ports.contour,
-      *ports.treble,
-      *ports.volume,
-      *ports.brilliance == 1.,
+      ports.gain.get(),
+      ports.bass.get(),
+      ports.contour.get(),
+      ports.treble.get(),
+      ports.volume.get(),
+      ports.brilliance.get() == 1.,
     );
 
-    for (input, output) in ports.input.iter().zip(ports.output.iter_mut()) {
-      *output = self.shredmaster.process(*input, &mut self.params);
+    for (input, output) in ports.input.iter().zip(ports.output.iter()) {
+      let shredmaster_output = self.shredmaster.process(input.get(), &mut self.params);
+      output.set(shredmaster_output);
     }
   }
 }
