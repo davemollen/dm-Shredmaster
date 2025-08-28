@@ -23,7 +23,7 @@ impl Default for DmShredmaster {
 }
 
 impl Plugin for DmShredmaster {
-  const NAME: &'static str = "dm-Shredmaster";
+  const NAME: &'static str = "Shredmaster";
   const VENDOR: &'static str = "DM";
   const URL: &'static str = "https://github.com/davemollen/dm-Shredmaster";
   const EMAIL: &'static str = "davemollen@gmail.com";
@@ -79,9 +79,7 @@ impl Plugin for DmShredmaster {
 
     buffer.iter_samples().for_each(|mut channel_samples| {
       let sample = channel_samples.iter_mut().next().unwrap();
-      let shredmaster_output = self
-        .shredmaster
-        .process(*sample, &mut self.process_params);
+      let shredmaster_output = self.shredmaster.process(*sample, &mut self.process_params);
       *sample = shredmaster_output;
     });
     ProcessStatus::Normal
