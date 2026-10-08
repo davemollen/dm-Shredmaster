@@ -175,6 +175,10 @@
 .mod-pedal-boxy{{{cns}}}.mod-five-knobs .mod-control-group .mod-knob .mod-toggle-image.on {
     background-position-y: top !important;
 }
+.mod-pedal-boxy{{{cns}}} .mod-control-group .mod-knob.mod-toggle-knob > span.mod-knob-title {
+    font-size:9px;
+    letter-spacing:-0.3px;
+}
 /* TOGGLE LIGHT */
 .mod-pedal-boxy{{{cns}}}.mod-five-knobs .mod-control-group .mod-knob .mod-toggle-light {
     background-image:url(/resources/pedals/red-light-off.png{{{ns}}});

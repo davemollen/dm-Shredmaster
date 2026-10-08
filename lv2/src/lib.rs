@@ -13,12 +13,17 @@ struct Ports {
   brilliance: InputPort<InPlaceControl>,
   input: InputPort<InPlaceAudio>,
   output: OutputPort<InPlaceAudio>,
+  enable: InputPort<InPlaceControl>,
 }
 
 #[uri("https://github.com/davemollen/dm-Shredmaster")]
 struct DmShredmaster {
   shredmaster: Shredmaster,
   params: Params,
+  // 0 = bypassed, 1 = engaged; ramps to avoid a click when switching
+  wet_mix: f32,
+  wet_mix_step: f32,
+  is_initialized: bool,
 }
 
 impl Plugin for DmShredmaster {
@@ -36,6 +41,10 @@ impl Plugin for DmShredmaster {
     Some(Self {
       shredmaster: Shredmaster::new(sample_rate),
       params: Params::new(sample_rate),
+      wet_mix: 1.,
+      // 20 ms crossfade between dry and processed signal
+      wet_mix_step: (0.02 * sample_rate).recip(),
+      is_initialized: false,
     })
   }
 
@@ -51,9 +60,23 @@ impl Plugin for DmShredmaster {
       ports.brilliance.get() == 1.,
     );
 
+    let target = if ports.enable.get() > 0.5 { 1. } else { 0. };
+    if !self.is_initialized {
+      self.wet_mix = target;
+      self.is_initialized = true;
+    }
+
     for (input, output) in ports.input.iter().zip(ports.output.iter()) {
-      let shredmaster_output = self.shredmaster.process(input.get(), &mut self.params);
-      output.set(shredmaster_output);
+      let dry = input.get();
+      let wet = self.shredmaster.process(dry, &mut self.params);
+
+      if self.wet_mix < target {
+        self.wet_mix = (self.wet_mix + self.wet_mix_step).min(target);
+      } else if self.wet_mix > target {
+        self.wet_mix = (self.wet_mix - self.wet_mix_step).max(target);
+      }
+
+      output.set(dry + (wet - dry) * self.wet_mix);
     }
   }
 }

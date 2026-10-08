@@ -35,6 +35,7 @@ impl LinearSmooth {
 impl Smoother for LinearSmooth {
   fn reset(&mut self, target: f32) {
     self.current = target;
+    self.target = target;
     self.step_counter = 0;
   }
 
