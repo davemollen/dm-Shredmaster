@@ -16,6 +16,8 @@
 	] ;
 	mod:brand "DM" ;
 	mod:label "Shredmaster" ;
+	lv2:minorVersion 1;
+	lv2:microVersion 1;
 	rdfs:comment """
 A distortion effect modeled after the Marshall Shredmaster(*).
 The Brilliance control has been added to counteract the loss of higher frequencies.
