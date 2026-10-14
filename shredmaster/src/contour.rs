@@ -35,6 +35,10 @@ impl Contour {
     }
   }
 
+  pub fn reset(&mut self) {
+    self.filter.reset();
+  }
+
   pub fn process(&mut self, input: f32, contour: f32) -> f32 {
     let s_domain_coefficients = self.get_s_domain_coefficients(contour);
     let z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);

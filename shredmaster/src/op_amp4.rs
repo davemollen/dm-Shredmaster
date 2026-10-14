@@ -12,6 +12,10 @@ impl OpAmp4 {
     }
   }
 
+  pub fn reset(&mut self) {
+    self.op_amp.reset();
+  }
+
   pub fn process(&mut self, input: f32, brilliance: bool) -> f32 {
     let s_domain_coefficients = if brilliance {
       // highpass cutoff at 7.23Hz & lowpass cutoff at 3386Hz

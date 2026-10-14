@@ -1,6 +1,5 @@
-mod biquad_filter;
-use biquad_filter::BiquadFilter;
 mod bilinear_transform;
+use crate::shared::biquad_filter::BiquadFilter;
 use bilinear_transform::BilinearTransform;
 
 pub struct NonInvertingOpAmp {
@@ -14,6 +13,10 @@ impl NonInvertingOpAmp {
       op_amp: BiquadFilter::new(),
       bilinear_transform: BilinearTransform::new(sample_rate),
     }
+  }
+
+  pub fn reset(&mut self) {
+    self.op_amp.reset();
   }
 
   pub fn process(&mut self, input: f32, s_domain_coefficients: ([f32; 3], [f32; 3])) -> f32 {

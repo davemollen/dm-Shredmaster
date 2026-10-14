@@ -1,6 +1,5 @@
-mod biquad_filter;
-use biquad_filter::BiquadFilter;
 mod bilinear_transform;
+use crate::shared::biquad_filter::BiquadFilter;
 use bilinear_transform::BilinearTransform;
 
 pub struct InvertingOpAmp {
@@ -14,6 +13,10 @@ impl InvertingOpAmp {
       op_amp: BiquadFilter::new(),
       bilinear_transform: BilinearTransform::new(sample_rate),
     }
+  }
+
+  pub fn reset(&mut self) {
+    self.op_amp.reset();
   }
 
   /// First tuple element represents b1, because b0 & b2 are expected to equal zero.

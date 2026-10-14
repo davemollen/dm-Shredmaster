@@ -19,6 +19,10 @@ impl OpAmp1 {
     }
   }
 
+  pub fn reset(&mut self) {
+    self.op_amp.reset();
+  }
+
   pub fn process(&mut self, input: f32, distortion: f32) -> f32 {
     let s_domain_coefficients = self.get_s_domain_coefficients(distortion);
     self.op_amp.process(input, s_domain_coefficients)

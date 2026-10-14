@@ -7,6 +7,10 @@ impl ThirdOrderIIRFilter {
     Self { z: [0.0; 3] }
   }
 
+  pub fn reset(&mut self) {
+    self.z = [0.0; 3];
+  }
+
   pub fn process(&mut self, x: f32, (b, a): ([f32; 4], [f32; 4])) -> f32 {
     let y = x * b[0] + self.z[0];
     self.z[0] = x * b[1] - y * a[1] + self.z[1];

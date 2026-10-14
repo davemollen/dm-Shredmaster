@@ -25,6 +25,10 @@ impl Params {
     }
   }
 
+  pub fn reset(&mut self) {
+    self.is_initialized = false;
+  }
+
   pub fn set(
     &mut self,
     gain: f32,

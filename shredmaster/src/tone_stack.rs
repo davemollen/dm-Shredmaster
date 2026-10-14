@@ -28,6 +28,10 @@ impl ToneStack {
     }
   }
 
+  pub fn reset(&mut self) {
+    self.filter.reset();
+  }
+
   pub fn process(&mut self, input: f32, bass: f32, treble: f32) -> f32 {
     let s_domain_coefficients = self.get_s_domain_coefficients(bass, treble);
     let z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);

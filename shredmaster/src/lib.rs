@@ -9,6 +9,7 @@ mod params;
 mod tone_stack;
 mod shared {
   pub mod bilinear_transform;
+  pub mod biquad_filter;
   pub mod float_ext;
   pub mod inverting_op_amp;
   pub mod third_order_iir_filter;
@@ -40,6 +41,16 @@ impl Shredmaster {
       contour: Contour::new(sample_rate),
       op_amp4: OpAmp4::new(sample_rate),
     }
+  }
+
+  pub fn reset(&mut self) {
+    self.op_amp1.reset();
+    self.op_amp2.reset();
+    self.clipper.reset();
+    self.tone_stack.reset();
+    self.op_amp3.reset();
+    self.contour.reset();
+    self.op_amp4.reset();
   }
 
   pub fn process(&mut self, input: f32, params: &mut Params) -> f32 {

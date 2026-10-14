@@ -11,6 +11,10 @@ impl OpAmp2 {
     }
   }
 
+  pub fn reset(&mut self) {
+    self.op_amp.reset();
+  }
+
   pub fn process(&mut self, input: f32) -> f32 {
     let s_domain_coefficients = (-2594706.7981318, [1., 33082.511676181, 56113901.343681]);
     self.op_amp.process(input, s_domain_coefficients)
