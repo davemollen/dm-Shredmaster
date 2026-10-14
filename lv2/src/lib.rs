@@ -1,7 +1,7 @@
 extern crate lv2;
 extern crate shredmaster;
 use lv2::prelude::*;
-use shredmaster::{Params, Shredmaster};
+use shredmaster::{Bypass, Params, Shredmaster};
 
 #[derive(PortCollection)]
 struct Ports {
@@ -13,12 +13,14 @@ struct Ports {
   brilliance: InputPort<InPlaceControl>,
   input: InputPort<InPlaceAudio>,
   output: OutputPort<InPlaceAudio>,
+  enabled: InputPort<InPlaceControl>,
 }
 
 #[uri("https://github.com/davemollen/dm-Shredmaster")]
 struct DmShredmaster {
   shredmaster: Shredmaster,
   params: Params,
+  bypass: Bypass,
 }
 
 impl Plugin for DmShredmaster {
@@ -36,12 +38,14 @@ impl Plugin for DmShredmaster {
     Some(Self {
       shredmaster: Shredmaster::new(sample_rate),
       params: Params::new(sample_rate),
+      bypass: Bypass::new(sample_rate),
     })
   }
 
   /// Reset the internal state of the plugin.
   fn activate(&mut self, _features: &mut Self::InitFeatures) {
     self.shredmaster.reset();
+    self.bypass.reset();
   }
 
   // Process a chunk of audio. The audio ports are dereferenced to slices, which the plugin
@@ -55,9 +59,12 @@ impl Plugin for DmShredmaster {
       ports.volume.get(),
       ports.brilliance.get() == 1.,
     );
+    self.bypass.enabled(ports.enabled.get());
 
     for (input, output) in ports.input.iter().zip(ports.output.iter()) {
-      let shredmaster_output = self.shredmaster.process(input.get(), &mut self.params);
+      let dry = input.get();
+      let wet = self.shredmaster.process(dry, &mut self.params);
+      let shredmaster_output = self.bypass.process(dry, wet);
       output.set(shredmaster_output);
     }
   }

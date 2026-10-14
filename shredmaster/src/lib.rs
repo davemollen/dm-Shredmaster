@@ -1,4 +1,5 @@
 #![feature(portable_simd)]
+mod bypass;
 mod clipper;
 mod contour;
 mod op_amp1;
@@ -14,7 +15,7 @@ mod shared {
   pub mod inverting_op_amp;
   pub mod third_order_iir_filter;
 }
-pub use params::Params;
+pub use {bypass::Bypass, params::Params};
 use {
   clipper::Clipper, contour::Contour, op_amp1::OpAmp1, op_amp2::OpAmp2, op_amp3::OpAmp3,
   op_amp4::OpAmp4, params::Smoother, tone_stack::ToneStack,
