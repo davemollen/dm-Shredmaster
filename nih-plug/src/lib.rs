@@ -71,6 +71,7 @@ impl Plugin for DmShredmaster {
 
   fn reset(&mut self) {
     self.shredmaster.reset();
+    self.process_params.reset();
   }
 
   fn process(
