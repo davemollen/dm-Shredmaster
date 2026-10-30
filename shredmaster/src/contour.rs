@@ -1,6 +1,4 @@
-use crate::shared::{
-  bilinear_transform::BilinearTransform, third_order_iir_filter::ThirdOrderIIRFilter,
-};
+use crate::shared::third_order_iir_filter::{BilinearTransform, ThirdOrderIIRFilter};
 
 const R1: f32 = 100.;
 const R2: f32 = 33000.;
@@ -13,6 +11,8 @@ const C3: f32 = 4.7e-8;
 pub struct Contour {
   filter: ThirdOrderIIRFilter,
   bilinear_transform: BilinearTransform,
+  prev_contour: Option<f32>,
+  z_domain_coefficients: ([f32; 4], [f32; 4]),
 }
 
 impl Contour {
@@ -32,6 +32,8 @@ impl Contour {
     Self {
       bilinear_transform: BilinearTransform::new(sample_rate),
       filter: ThirdOrderIIRFilter::new(),
+      prev_contour: None,
+      z_domain_coefficients: ([0.; 4], [0.; 4]),
     }
   }
 
@@ -40,9 +42,12 @@ impl Contour {
   }
 
   pub fn process(&mut self, input: f32, contour: f32) -> f32 {
-    let s_domain_coefficients = self.get_s_domain_coefficients(contour);
-    let z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
-    self.filter.process(input, z_domain_coefficients)
+    if self.prev_contour.map_or(true, |value| value != contour) {
+      let s_domain_coefficients = self.get_s_domain_coefficients(contour);
+      self.z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
+      self.prev_contour = Some(contour);
+    }
+    self.filter.process(input, self.z_domain_coefficients)
   }
 
   fn get_s_domain_coefficients(&self, contour: f32) -> ([f32; 4], [f32; 4]) {

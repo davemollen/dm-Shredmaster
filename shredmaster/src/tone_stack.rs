@@ -1,6 +1,4 @@
-use crate::shared::{
-  bilinear_transform::BilinearTransform, third_order_iir_filter::ThirdOrderIIRFilter,
-};
+use crate::shared::third_order_iir_filter::{BilinearTransform, ThirdOrderIIRFilter};
 
 const R1: f32 = 22000.;
 const R2: f32 = 100000.;
@@ -13,6 +11,8 @@ const C3: f32 = 2.2e-8;
 pub struct ToneStack {
   filter: ThirdOrderIIRFilter,
   bilinear_transform: BilinearTransform,
+  prev_params: Option<(f32, f32)>,
+  z_domain_coefficients: ([f32; 4], [f32; 4]),
 }
 
 impl ToneStack {
@@ -25,6 +25,8 @@ impl ToneStack {
     Self {
       filter: ThirdOrderIIRFilter::new(),
       bilinear_transform: BilinearTransform::new(sample_rate),
+      prev_params: None,
+      z_domain_coefficients: ([0.; 4], [0.; 4]),
     }
   }
 
@@ -33,9 +35,14 @@ impl ToneStack {
   }
 
   pub fn process(&mut self, input: f32, bass: f32, treble: f32) -> f32 {
-    let s_domain_coefficients = self.get_s_domain_coefficients(bass, treble);
-    let z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
-    self.filter.process(input, z_domain_coefficients)
+    if self.prev_params.map_or(true, |(prev_bass, prev_treble)| {
+      prev_bass != bass || prev_treble != treble
+    }) {
+      let s_domain_coefficients = self.get_s_domain_coefficients(bass, treble);
+      self.z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
+      self.prev_params = Some((bass, treble));
+    }
+    self.filter.process(input, self.z_domain_coefficients)
   }
 
   fn get_s_domain_coefficients(&self, bass: f32, treble: f32) -> ([f32; 4], [f32; 4]) {

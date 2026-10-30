@@ -1,3 +1,6 @@
+mod bilinear_transform;
+pub use bilinear_transform::BilinearTransform;
+
 pub struct ThirdOrderIIRFilter {
   z: [f32; 3],
 }

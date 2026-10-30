@@ -1,13 +1,16 @@
-mod non_inverting_op_amp;
-use non_inverting_op_amp::NonInvertingOpAmp;
+use crate::shared::{biquad_filter::BiquadFilter, non_inverting_op_amp::BilinearTransform};
 
 const R1: f32 = 3300.;
 const R2: f32 = 100000.;
 const C1: f32 = 4.7e-8;
 const C2: f32 = 1e-10;
 
+// Non-inverting op-amp
 pub struct OpAmp1 {
-  op_amp: NonInvertingOpAmp,
+  op_amp: BiquadFilter,
+  bilinear_transform: BilinearTransform,
+  prev_distortion: Option<f32>,
+  z_domain_coefficients: ([f32; 3], [f32; 3]),
 }
 
 impl OpAmp1 {
@@ -15,7 +18,10 @@ impl OpAmp1 {
 
   pub fn new(sample_rate: f32) -> Self {
     Self {
-      op_amp: NonInvertingOpAmp::new(sample_rate),
+      op_amp: BiquadFilter::new(),
+      bilinear_transform: BilinearTransform::new(sample_rate),
+      prev_distortion: None,
+      z_domain_coefficients: ([0.; 3], [0.; 3]),
     }
   }
 
@@ -24,8 +30,15 @@ impl OpAmp1 {
   }
 
   pub fn process(&mut self, input: f32, distortion: f32) -> f32 {
-    let s_domain_coefficients = self.get_s_domain_coefficients(distortion);
-    self.op_amp.process(input, s_domain_coefficients)
+    if self
+      .prev_distortion
+      .map_or(true, |value| value != distortion)
+    {
+      let s_domain_coefficients = self.get_s_domain_coefficients(distortion);
+      self.z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
+      self.prev_distortion = Some(distortion);
+    }
+    self.op_amp.process(input, self.z_domain_coefficients)
   }
 
   fn get_s_domain_coefficients(&self, gain: f32) -> ([f32; 3], [f32; 3]) {

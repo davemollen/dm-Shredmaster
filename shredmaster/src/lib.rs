@@ -9,10 +9,10 @@ mod op_amp4;
 mod params;
 mod tone_stack;
 mod shared {
-  pub mod bilinear_transform;
   pub mod biquad_filter;
   pub mod float_ext;
   pub mod inverting_op_amp;
+  pub mod non_inverting_op_amp;
   pub mod third_order_iir_filter;
 }
 pub use {bypass::Bypass, params::Params};
